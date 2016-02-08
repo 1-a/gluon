@@ -1,0 +1,83 @@
+# https://docs.travis-ci.com/user/ci-environment#Virtualization-environments
+#sudo: required
+#dist: trusty
+sudo: false # container-based => cache available for public repo
+
+# https://docs.travis-ci.com/user/caching/#Things-not-to-cache
+cache:
+  apt: true
+  # ISSUE: running `casher push` took longer than 180 seconds and has been aborted
+  directories:
+    - openwrt
+    - package
+    - packages
+    - build
+
+branches:
+  # whitelist
+  only:
+      - travis-v2016.1.x
+
+# https://docs.travis-ci.com/user/languages/c
+language: c
+
+# https://docs.travis-ci.com/user/customizing-the-build/#Build-Matrix
+compiler:
+  # http://clang.llvm.org/features.html#performance
+  #- clang
+  - gcc
+
+env:
+  # https://docs.travis-ci.com/user/environment-variables/#Global-Variables
+  global:
+  matrix:
+    - GLUON_TARGET=ar71xx-generic
+
+# for container-based    
+# http://docs.travis-ci.com/user/apt/
+# http://gluon.readthedocs.org/en/latest/user/getting_started.html#dependencies
+addons:
+  apt:
+    sources:
+    packages:
+      - git
+      - subversion
+      - python
+      - build-essential
+      - gawk
+      - unzip
+      - libncurses5-dev
+      - zlib1g-dev
+      - libssl-dev
+      - bzip2
+
+# for non-container-based
+before_install:
+   - chmod +x travis_wait
+  #- sudo apt-get update -qq
+  #- sudo apt-get install -qq git make gcc g++ unzip libncurses5-dev zlib1g-dev subversion gawk bzip2 libssl-dev
+
+install:
+  # https://wiki.luebeck.freifunk.net/gluon
+  #- mkdir site
+  #- cd site
+  #- cp ../docs/site-example/site.conf .
+  #- cp ../docs/site-example/site.mk .
+  #- cp -r ../docs/site-example/i18n .
+  #- cd ..
+  - git clone https://github.com/freifunk-flensburg/site-fffl.git site
+  - cd site
+  - git checkout 2016.1.0-0
+  - cd ..
+  # Get other repositories used by Gluon (site.mk)
+  - make update
+  
+script: 
+  #- make clean
+  # https://docs.travis-ci.com/user/build-timeouts
+  # - travis_wait travis_retry make v=S -j2
+  - ./travis_wait -i 60 -l 2400 -x 0 -a 1 "make -j$(nproc) v=S" "build.log"
+  - ./travis_wait -i 60 -l 2400 -x 0 -a 1 "make -j$(nproc) v=S" "build.log"
+  - ./travis_wait -i 60 -l 2400 -x 0 -a 1 "make -j$(nproc) v=S" "build.log"
+  - ./travis_wait -i 60 -l 2400 -x 0 -a 1 "make -j$(nproc) v=S" "build.log"
+  - ./travis_wait -i 60 -l 2400 -x 0 -a 1 "make -j$(nproc) v=S" "build.log"
